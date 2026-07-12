@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 from pathlib import Path
+
 import yaml
 
 
@@ -28,7 +29,7 @@ def _main():
             item_mkdocs = os.path.join(item_dir, 'mkdocs.yml')
             if os.path.isfile(item_mkdocs):
                 items = []
-                with open(item_mkdocs, 'r') as f:
+                with open(item_mkdocs, 'r', encoding='utf-8') as f:
                     data = yaml.safe_load(f)
                     for nav in data['nav']:
                         nav_path = os.path.join(item_dir, nav)
@@ -36,25 +37,51 @@ def _main():
                         src_nav_path = os.path.join(item_dir, "docs", nav)
                         os.makedirs(os.path.dirname(real_nav_path), exist_ok=True)
                         dst_raw = ''
-                        with open(src_nav_path, 'r') as ff:
-                            for line in ff.readlines():
-                                line = line.strip()
+                        with open(src_nav_path, 'r', encoding='utf-8') as ff:
+                            for line in ff:
+                                line = line.rstrip('\r\n')
                                 for pattern in patterns:
                                     for uri in pattern.findall(line):
                                         for purl in no_referrer_urls:
                                             if purl in uri:
                                                 line = f'{line}{{:referrerpolicy="no-referrer"}}'
-                                    
+
                                 dst_raw += line
                                 dst_raw += "\n"
-                        with open(real_nav_path, 'w') as fi:
+                        with open(
+                            real_nav_path,
+                            'w',
+                            encoding='utf-8',
+                            newline='\n'
+                        ) as fi:
                             fi.write(dst_raw)
                         items.append(nav_path)
+
+                    # The original generator copied only Markdown. Publish static
+                    # files placed under docs as well (for this package: images).
+                    src_docs_dir = os.path.join(item_dir, 'docs')
+                    dst_docs_dir = os.path.join(docs_dir, item_dir)
+                    for root, _, filenames in os.walk(src_docs_dir):
+                        for filename in filenames:
+                            if filename.lower().endswith('.md'):
+                                continue
+                            src_asset_path = os.path.join(root, filename)
+                            relative_asset_path = os.path.relpath(
+                                src_asset_path, src_docs_dir
+                            )
+                            dst_asset_path = os.path.join(
+                                dst_docs_dir, relative_asset_path
+                            )
+                            os.makedirs(
+                                os.path.dirname(dst_asset_path), exist_ok=True
+                            )
+                            shutil.copy2(src_asset_path, dst_asset_path)
+
                     index_text += f'\n[{os.path.basename(item_dir)}]({os.path.basename(item_dir)}/{os.path.basename(item_dir)})\n'
                 navs.append({sub_dir: items})
 
         tag_index = os.path.join(docs_dir, dir, 'index.md')
-        with open(tag_index, 'w') as wr:
+        with open(tag_index, 'w', encoding='utf-8', newline='\n') as wr:
             wr.write(index_text)
 
         all.append({dir: navs})
