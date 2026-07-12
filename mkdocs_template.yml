@@ -1,12 +1,12 @@
 # Site metadata
 site_name: 极客时间文档
 site_description: 极客时间文档
-site_url: https://github.com/uaxe/geektime-docs
-site_author: zkep
-repo_name: zkep/my-geektime
-repo_url: https://github.com/zkep/my-geektime
-edit_uri: https://github.com/uaxe/geektime-docs
-remote_name: https://github.com/uaxe/geektime-docs
+site_url: https://ycamelia.github.io/geektime-docs/
+site_author: YCamelia
+repo_name: YCamelia/geektime-docs
+repo_url: https://github.com/YCamelia/geektime-docs
+edit_uri: edit/master/
+remote_name: https://github.com/YCamelia/geektime-docs
 docs_dir: "dist/" # where to find the markdown files
 site_dir: "site/" # where to publish to
 use_directory_urls: true # don't display 'index.html' in slugs
